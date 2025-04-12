@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxas Econômicas Atualizadas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tax-title {
+            font-size: 24px;
+            color: #34495e;
+        }
+
+        .tax-value {
+            font-size: 20px;
+            color: #16a085;
+            margin-top: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Taxas Econômicas Atualizadas</h1>
+
+    <div class="card">
+        <div class="tax-title">INCC - Índice Nacional de Custo da Construção</div>
+        <div class="tax-value" id="incc_atual">Carregando...</div>
+        <div class="tax-value" id="incc_acumulado">Carregando...</div>
+    </div>
+
+    <div class="card">
+        <div class="tax-title">Taxa Selic</div>
+        <div class="tax-value" id="selic_atual">Carregando...</div>
+        <div class="tax-value" id="selic_acumulado">Carregando...</div>
+    </div>
+
+    <div class="card">
+        <div class="tax-title">IGPM - Índice Geral de Preços do Mercado</div>
+        <div class="tax-value" id="igpm_atual">Carregando...</div>
+        <div class="tax-value" id="igpm_acumulado">Carregando...</div>
+    </div>
+
+    <div class="card">
+        <div class="tax-title">IPCA - Índice de Preços ao Consumidor Amplo</div>
+        <div class="tax-value" id="ipca_atual">Carregando...</div>
+        <div class="tax-value" id="ipca_acumulado">Carregando...</div>
+    </div>
+
+    <div class="footer">
+        <p>Dados fornecidos pelas APIs públicas do Banco Central do Brasil</p>
+    </div>
+
+    <script>
+        // Função para buscar as taxas financeiras com dados de proxy CORS
+        async function buscarTaxas() {
+            const corsProxy = 'https://api.allorigins.win/get?url='; // Usando o AllOrigins como proxy de CORS
+
+            try {
+                // Definindo as URLs da API
+                const inccUrl = 'https://api.dadosdemercado.com.br/v1/macro/incc';
+                const selicUrl = 'https://api.dadosdemercado.com.br/v1/macro/selic';
+                const igpmUrl = 'https://api.dadosdemercado.com.br/v1/macro/igp-m';
+                const ipcaUrl = 'https://api.dadosdemercado.com.br/v1/macro/ipca';
+
+                // Requisição para INCC
+                const inccResponse = await fetch(corsProxy + encodeURIComponent(inccUrl));
+                const inccData = await inccResponse.json();
+                if (inccData && inccData.contents && inccData.contents[0]) {
+                    document.getElementById('incc_atual').innerText = `Atual: ${inccData.contents[0].valor}%`;
+                    document.getElementById('incc_acumulado').innerText = `Acumulado no ano: ${inccData.contents[1].valor}%`;
+                } else {
+                    document.getElementById('incc_atual').innerText = 'Erro ao carregar INCC';
+                    document.getElementById('incc_acumulado').innerText = 'Erro ao carregar INCC';
+                }
+
+                // Requisição para Selic
+                const selicResponse = await fetch(corsProxy + encodeURIComponent(selicUrl));
+                const selicData = await selicResponse.json();
+                if (selicData && selicData.contents && selicData.contents[0]) {
+                    document.getElementById('selic_atual').innerText = `Atual: ${selicData.contents[0].valor}%`;
+                    document.getElementById('selic_acumulado').innerText = `Acumulado no ano: ${selicData.contents[1].valor}%`;
+                } else {
+                    document.getElementById('selic_atual').innerText = 'Erro ao carregar Selic';
+                    document.getElementById('selic_acumulado').innerText = 'Erro ao carregar Selic';
+                }
+
+                // Requisição para IGPM
+                const igpmResponse = await fetch(corsProxy + encodeURIComponent(igpmUrl));
+                const igpmData = await igpmResponse.json();
+                if (igpmData && igpmData.contents && igpmData.contents[0]) {
+                    document.getElementById('igpm_atual').innerText = `Atual: ${igpmData.contents[0].valor}%`;
+                    document.getElementById('igpm_acumulado').innerText = `Acumulado no ano: ${igpmData.contents[1].valor}%`;
+                } else {
+                    document.getElementById('igpm_atual').innerText = 'Erro ao carregar IGPM';
+                    document.getElementById('igpm_acumulado').innerText = 'Erro ao carregar IGPM';
+                }
+
+                // Requisição para IPCA
+                const ipcaResponse = await fetch(corsProxy + encodeURIComponent(ipcaUrl));
+                const ipcaData = await ipcaResponse.json();
+                if (ipcaData && ipcaData.contents && ipcaData.contents[0]) {
+                    document.getElementById('ipca_atual').innerText = `Atual: ${ipcaData.contents[0].valor}%`;
+                    document.getElementById('ipca_acumulado').innerText = `Acumulado no ano: ${ipcaData.contents[1].valor}%`;
+                } else {
+                    document.getElementById('ipca_atual').innerText = 'Erro ao carregar IPCA';
+                    document.getElementById('ipca_acumulado').innerText = 'Erro ao carregar IPCA';
+                }
+
+            } catch (error) {
+                console.error('Erro ao buscar as taxas:', error);
+                alert('Erro ao carregar as taxas. Tente novamente mais tarde.');
+            }
+        }
+
+        // Chama a função assim que a página for carregada
+        window.onload = buscarTaxas;
+    </script>
+
+</body>
+</html>
