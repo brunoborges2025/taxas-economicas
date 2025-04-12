@@ -51,51 +51,81 @@
     <div class="card">
         <div class="tax-title">INCC - Índice Nacional de Custo da Construção</div>
         <div class="tax-value" id="incc_atual">Carregando...</div>
-        <div class="tax-value" id="incc_acumulado">Carregando...</div>
     </div>
 
     <div class="card">
         <div class="tax-title">Taxa Selic</div>
         <div class="tax-value" id="selic_atual">Carregando...</div>
-        <div class="tax-value" id="selic_acumulado">Carregando...</div>
     </div>
 
     <div class="card">
-        <div class="tax-title">IGPM - Índice Geral de Preços do Mercado</div>
+        <div class="tax-title">IGP-M - Índice Geral de Preços do Mercado</div>
         <div class="tax-value" id="igpm_atual">Carregando...</div>
-        <div class="tax-value" id="igpm_acumulado">Carregando...</div>
     </div>
 
     <div class="card">
         <div class="tax-title">IPCA - Índice de Preços ao Consumidor Amplo</div>
         <div class="tax-value" id="ipca_atual">Carregando...</div>
-        <div class="tax-value" id="ipca_acumulado">Carregando...</div>
     </div>
 
     <div class="footer">
-        <p>Dados fornecidos por APIs públicas</p>
+        <p>Dados fornecidos pelas APIs públicas do Banco Central do Brasil e do Cálculo Jurídico</p>
     </div>
 
     <script>
         async function buscarTaxas() {
-            const corsProxy = 'https://api.allorigins.win/get?url=';
-
             try {
-                const endpoints = {
-                    incc: 'https://api.dadosdemercado.com.br/v1/macro/incc',
-                    selic: 'https://api.dadosdemercado.com.br/v1/macro/selic',
-                    igpm: 'https://api.dadosdemercado.com.br/v1/macro/igp-m',
-                    ipca: 'https://api.dadosdemercado.com.br/v1/macro/ipca'
-                };
+                // Data atual
+                const hoje = new Date();
+                const ano = hoje.getFullYear();
+                const mes = hoje.getMonth() + 1; // Janeiro é 0
 
-                for (const [chave, url] of Object.entries(endpoints)) {
-                    const response = await fetch(corsProxy + encodeURIComponent(url));
-                    const rawData = await response.json();
-                    const data = JSON.parse(rawData.contents);
-
-                    document.getElementById(`${chave}_atual`).innerText = `Atual: ${data[0]?.valor ?? 'N/A'}%`;
-                    document.getElementById(`${chave}_acumulado`).innerText = `Acumulado no ano: ${data[1]?.valor ?? 'N/A'}%`;
+                // Função para formatar data no padrão YYYY-MM-DD
+                function formatarData(data) {
+                    const d = new Date(data);
+                    const ano = d.getFullYear();
+                    const mes = String(d.getMonth() + 1).padStart(2, '0');
+                    const dia = String(d.getDate()).padStart(2, '0');
+                    return `${ano}-${mes}-${dia}`;
                 }
+
+                // Obter data de início (30 dias atrás)
+                const dataInicio = new Date();
+                dataInicio.setDate(dataInicio.getDate() - 30);
+                const dataInicioFormatada = formatarData(dataInicio);
+                const dataFimFormatada = formatarData(hoje);
+
+                // Fetch INCC from Cálculo Jurídico API
+                const inccResponse = await fetch('https://indices.calculojuridico.com.br/v1/index?index_kind=incc');
+                const inccData = await inccResponse.json();
+                const inccIndices = inccData.indices;
+
+                // Encontrar o índice mais recente
+                const inccMaisRecente = inccIndices.reduce((maisRecente, atual) => {
+                    const dataMaisRecente = new Date(maisRecente.year, maisRecente.month - 1);
+                    const dataAtual = new Date(atual.year, atual.month - 1);
+                    return dataAtual > dataMaisRecente ? atual : maisRecente;
+                });
+
+                document.getElementById('incc_atual').innerText = `Atual: ${inccMaisRecente.variation_percentage}%`;
+
+                // Fetch Selic
+                const selicResponse = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.4390/dados?formato=json&dataInicial=${dataInicioFormatada}&dataFinal=${dataFimFormatada}`);
+                const selicData = await selicResponse.json();
+                const selicMaisRecente = selicData[selicData.length - 1];
+                document.getElementById('selic_atual').innerText = `Atual: ${selicMaisRecente.valor}%`;
+
+                // Fetch IGP-M
+                const igpmResponse = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.189/dados?formato=json&dataInicial=${dataInicioFormatada}&dataFinal=${dataFimFormatada}`);
+                const igpmData = await igpmResponse.json();
+                const igpmMaisRecente = igpmData[igpmData.length - 1];
+                document.getElementById('igpm_atual').innerText = `Atual: ${igpmMaisRecente.valor}%`;
+
+                // Fetch IPCA
+                const ipcaResponse = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json&dataInicial=${dataInicioFormatada}&dataFinal=${dataFimFormatada}`);
+                const ipcaData = await ipcaResponse.json();
+                const ipcaMaisRecente = ipcaData[ipcaData.length - 1];
+                document.getElementById('ipca_atual').innerText = `Atual: ${ipcaMaisRecente.valor}%`;
 
             } catch (error) {
                 console.error('Erro ao buscar as taxas:', error);
@@ -107,4 +137,6 @@
     </script>
 
 </body>
-</html>
+</html
+::contentReference[oaicite:6]{index=6}
+ 
