@@ -73,63 +73,28 @@
     </div>
 
     <div class="footer">
-        <p>Dados fornecidos pelas APIs públicas do Banco Central do Brasil</p>
+        <p>Dados fornecidos por APIs públicas</p>
     </div>
 
     <script>
-        // Função para buscar as taxas financeiras com dados de proxy CORS
         async function buscarTaxas() {
-            const corsProxy = 'https://api.allorigins.win/get?url='; // Usando o AllOrigins como proxy de CORS
+            const corsProxy = 'https://api.allorigins.win/get?url=';
 
             try {
-                // Definindo as URLs da API
-                const inccUrl = 'https://api.dadosdemercado.com.br/v1/macro/incc';
-                const selicUrl = 'https://api.dadosdemercado.com.br/v1/macro/selic';
-                const igpmUrl = 'https://api.dadosdemercado.com.br/v1/macro/igp-m';
-                const ipcaUrl = 'https://api.dadosdemercado.com.br/v1/macro/ipca';
+                const endpoints = {
+                    incc: 'https://api.dadosdemercado.com.br/v1/macro/incc',
+                    selic: 'https://api.dadosdemercado.com.br/v1/macro/selic',
+                    igpm: 'https://api.dadosdemercado.com.br/v1/macro/igp-m',
+                    ipca: 'https://api.dadosdemercado.com.br/v1/macro/ipca'
+                };
 
-                // Requisição para INCC
-                const inccResponse = await fetch(corsProxy + encodeURIComponent(inccUrl));
-                const inccData = await inccResponse.json();
-                if (inccData && inccData.contents && inccData.contents[0]) {
-                    document.getElementById('incc_atual').innerText = `Atual: ${inccData.contents[0].valor}%`;
-                    document.getElementById('incc_acumulado').innerText = `Acumulado no ano: ${inccData.contents[1].valor}%`;
-                } else {
-                    document.getElementById('incc_atual').innerText = 'Erro ao carregar INCC';
-                    document.getElementById('incc_acumulado').innerText = 'Erro ao carregar INCC';
-                }
+                for (const [chave, url] of Object.entries(endpoints)) {
+                    const response = await fetch(corsProxy + encodeURIComponent(url));
+                    const rawData = await response.json();
+                    const data = JSON.parse(rawData.contents);
 
-                // Requisição para Selic
-                const selicResponse = await fetch(corsProxy + encodeURIComponent(selicUrl));
-                const selicData = await selicResponse.json();
-                if (selicData && selicData.contents && selicData.contents[0]) {
-                    document.getElementById('selic_atual').innerText = `Atual: ${selicData.contents[0].valor}%`;
-                    document.getElementById('selic_acumulado').innerText = `Acumulado no ano: ${selicData.contents[1].valor}%`;
-                } else {
-                    document.getElementById('selic_atual').innerText = 'Erro ao carregar Selic';
-                    document.getElementById('selic_acumulado').innerText = 'Erro ao carregar Selic';
-                }
-
-                // Requisição para IGPM
-                const igpmResponse = await fetch(corsProxy + encodeURIComponent(igpmUrl));
-                const igpmData = await igpmResponse.json();
-                if (igpmData && igpmData.contents && igpmData.contents[0]) {
-                    document.getElementById('igpm_atual').innerText = `Atual: ${igpmData.contents[0].valor}%`;
-                    document.getElementById('igpm_acumulado').innerText = `Acumulado no ano: ${igpmData.contents[1].valor}%`;
-                } else {
-                    document.getElementById('igpm_atual').innerText = 'Erro ao carregar IGPM';
-                    document.getElementById('igpm_acumulado').innerText = 'Erro ao carregar IGPM';
-                }
-
-                // Requisição para IPCA
-                const ipcaResponse = await fetch(corsProxy + encodeURIComponent(ipcaUrl));
-                const ipcaData = await ipcaResponse.json();
-                if (ipcaData && ipcaData.contents && ipcaData.contents[0]) {
-                    document.getElementById('ipca_atual').innerText = `Atual: ${ipcaData.contents[0].valor}%`;
-                    document.getElementById('ipca_acumulado').innerText = `Acumulado no ano: ${ipcaData.contents[1].valor}%`;
-                } else {
-                    document.getElementById('ipca_atual').innerText = 'Erro ao carregar IPCA';
-                    document.getElementById('ipca_acumulado').innerText = 'Erro ao carregar IPCA';
+                    document.getElementById(`${chave}_atual`).innerText = `Atual: ${data[0]?.valor ?? 'N/A'}%`;
+                    document.getElementById(`${chave}_acumulado`).innerText = `Acumulado no ano: ${data[1]?.valor ?? 'N/A'}%`;
                 }
 
             } catch (error) {
@@ -138,7 +103,6 @@
             }
         }
 
-        // Chama a função assim que a página for carregada
         window.onload = buscarTaxas;
     </script>
 
